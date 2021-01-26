@@ -1560,12 +1560,6 @@ xdrawglyphfontspecs(const XftGlyphFontSpec *specs, Glyph base, int len, int x, i
 		bg = temp;
 	}
 
-	if (base.mode & ATTR_SELECTED) {
-		bg = &dc.col[selectionbg];
-		if (!ignoreselfg)
-			fg = &dc.col[selectionfg];
-	}
-
 	if (base.mode & ATTR_BLINK && win.mode & MODE_BLINK)
 		fg = bg;
 
@@ -1636,7 +1630,7 @@ xdrawcursor(int cx, int cy, Glyph g, int ox, int oy, Glyph og, Line line, int le
 
 	/* remove the old cursor */
 	if (selected(ox, oy))
-        og.mode ^= ATTR_SELECTED;
+		og.mode ^= ATTR_REVERSE;
 
 	/* Redraw the line where cursor was previously.
 	 * It will restore the ligatures broken by the cursor. */
@@ -1652,13 +1646,23 @@ xdrawcursor(int cx, int cy, Glyph g, int ox, int oy, Glyph og, Line line, int le
 
 	if (IS_SET(MODE_REVERSE)) {
 		g.mode |= ATTR_REVERSE;
-                g.fg = defaultcs;
 		g.bg = defaultfg;
-                drawcol = dc.col[defaultrcs];
+		if (selected(cx, cy)) {
+			drawcol = dc.col[defaultcs];
+			g.fg = defaultrcs;
+		} else {
+			drawcol = dc.col[defaultrcs];
+			g.fg = defaultcs;
+		}
 	} else {
-                g.fg = defaultbg;
-                g.bg = defaultcs;
-                drawcol = dc.col[defaultcs];
+		if (selected(cx, cy)) {
+			g.fg = defaultfg;
+			g.bg = defaultrcs;
+		} else {
+			g.fg = defaultbg;
+			g.bg = defaultcs;
+		}
+		drawcol = dc.col[g.bg];
 	}
 
 	/* draw the new one */
@@ -1777,7 +1781,7 @@ xdrawline(Line line, int x1, int y1, int x2)
 		if (new.mode == ATTR_WDUMMY)
 			continue;
 		if (selected(x, y1))
-			new.mode ^= ATTR_SELECTED;
+			new.mode ^= ATTR_REVERSE;
 		if (i > 0 && ATTRCMP(base, new)) {
 			xdrawglyphfontspecs(specs, base, i, ox, y1);
 			specs += i;

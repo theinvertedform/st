@@ -1,0 +1,11 @@
+--- x.c	2020-07-20 19:46:23.081759264 +0530
++++ x.c	2020-06-19 14:59:45.000000000 +0530
+@@ -1491,7 +1485,7 @@ xdrawcursor(int cx, int cy, Glyph g, int
+ 
+ 	/* remove the old cursor */
+ 	if (selected(ox, oy))
+-                og.mode ^= ATTR_SELECTED;
++		og.mode ^= ATTR_REVERSE;
+ 	xdrawglyph(og, ox, oy);
+ 
+ 	if (IS_SET(MODE_HIDE))
